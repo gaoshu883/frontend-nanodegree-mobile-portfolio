@@ -4,7 +4,8 @@ var gulp = require('gulp'),
   htmlmin = require('gulp-htmlmin'),
   imageResize = require('gulp-image-resize'),
   rename = require('gulp-rename'),
-  imagemin = require('gulp-imagemin');
+  imagemin = require('gulp-imagemin'),
+  pump = require('pump');
 
 //Paths to various files
 var paths = {
@@ -19,13 +20,17 @@ var paths = {
 };
 
 //Minifies js files
-gulp.task('scripts', function() {
-  return gulp.src(paths.scripts)
-    .pipe(uglify())
-    .pipe(rename({
-      suffix: "-min"
-    }))
-    .pipe(gulp.dest('./dist/js/'));
+gulp.task('scripts', function(cb) {
+  pump([
+        gulp.src(paths.scripts),
+        uglify(),
+        rename({
+              suffix: "-min"
+            }),
+        gulp.dest('./dist/js/')
+    ],
+    cb
+  );
 });
 
 //Minifies CSS files
@@ -102,6 +107,11 @@ gulp.task('lowQImage', function() {
       suffix: "-0.6-min"
     }))
     .pipe(gulp.dest('./dist/image'));
+});
+
+//监听js文件的改动，并执行scripts任务
+gulp.task('watch', function() {
+  gulp.watch(paths.scripts, ['scripts']);
 });
 
 gulp.task('images', ['smallImage', 'mediumImage', 'largeImage', 'minifyImage', 'lowQImage']);
