@@ -111,8 +111,8 @@ gulp.task('watch', function() {
   gulp.watch(paths.scripts, ['scripts']);
   gulp.watch(paths.styles, function (event) {
     gulpSequence('styles', 'inlinesource')(function (err) {
-      if (err) console.log(err)
-    })
+      if (err) console.log(err);
+    });
   });
   gulp.watch(paths.contents, ['contents']);
 });
