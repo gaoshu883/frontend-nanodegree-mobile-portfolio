@@ -342,7 +342,7 @@ var makeRandomPizza = function() {
 
   for (var i = 0; i < numberOfMeats; i++) {
     pizza = pizza + ingredientItemizer(selectRandomMeat());
-  }
+  }// 每次循环都要调用一次ingredientItemizer函数
 
   for (var j = 0; j < numberOfNonMeats; j++) {
     pizza = pizza + ingredientItemizer(selectRandomNonMeat());
@@ -378,7 +378,7 @@ var pizzaElementGenerator = function(i) {
   pizzaContainer.id = "pizza" + i;                // gives each pizza element a unique id
   pizzaImageContainer.style.width="35%";
 
-  pizzaImage.src = "img/pizza.png";
+  pizzaImage.src = "image/pizza.png";
   pizzaImage.classList.add("img-responsive");
   pizzaImageContainer.appendChild(pizzaImage);
   pizzaContainer.appendChild(pizzaImageContainer);
@@ -421,38 +421,28 @@ var resizePizzas = function(size) {
 
   changeSliderLabel(size);
 
-   // Returns the size difference to change a pizza element from one size to another. Called by changePizzaSlices(size).
-  function determineDx (elem, size) {
-    var oldWidth = elem.offsetWidth;
-    var windowWidth = document.querySelector("#randomPizzas").offsetWidth;
-    var oldSize = oldWidth / windowWidth;
-
-    // Changes the slider value to a percent width
-    function sizeSwitcher (size) {
-      switch(size) {
-        case "1":
-          return 0.25;
-        case "2":
-          return 0.3333;
-        case "3":
-          return 0.5;
-        default:
-          console.log("bug in sizeSwitcher");
-      }
-    }
-
-    var newSize = sizeSwitcher(size);
-    var dx = (newSize - oldSize) * windowWidth;
-
-    return dx;
-  }
-
   // Iterates through pizza elements on the page and changes their widths
+  //重构changePizzaSizes函数，完全是根据老师上课讲到的内容进行的。
   function changePizzaSizes(size) {
-    for (var i = 0; i < document.querySelectorAll(".randomPizzaContainer").length; i++) {
-      var dx = determineDx(document.querySelectorAll(".randomPizzaContainer")[i], size);
-      var newwidth = (document.querySelectorAll(".randomPizzaContainer")[i].offsetWidth + dx) + 'px';
-      document.querySelectorAll(".randomPizzaContainer")[i].style.width = newwidth;
+    var newwidth;
+
+    switch(size) {
+      case "1":
+        newwidth = 25;
+        break;
+      case "2":
+        newwidth = 33.33;
+        break;
+      case "3":
+        newwidth = 50;
+        break;
+      default:
+        console.log("bug in sizeSwitcher");
+    }
+    //减少读DOM的次数，避免FSL
+    var randomPizzas = document.getElementsByClassName("randomPizzaContainer");
+    for (var i = 0; i < randomPizzas.length; i++) {
+      randomPizzas[i].style.width = newwidth + '%';
     }
   }
 
@@ -501,10 +491,18 @@ function updatePositions() {
   frame++;
   window.performance.mark("mark_start_frame");
 
-  var items = document.querySelectorAll('.mover');
-  for (var i = 0; i < items.length; i++) {
-    var phase = Math.sin((document.body.scrollTop / 1250) + (i % 5));
-    items[i].style.left = items[i].basicLeft + 100 * phase + 'px';
+  //使用更有效的读取方式
+  //看看别人的试验https://jsperf.com/getelementsbyclassname-vs-queryselectorall/25
+  var items = document.getElementsByClassName('mover');
+  //循环体外，首先读取当前的滚动距离
+  var dx = document.body.scrollTop / 1250;
+  //尝试优化代码，减少计算次数，将pizza五个一组，循环遍历所有的组
+  for (var i = 0; i < 5; i++) {
+    sindx = Math.sin(dx + i);
+    for (var j = 0, n = items.length / 5; j < n; j++) {
+      itemX = items[5 * j + i].basicLeft + 100 * sindx;
+      items[5 * j + i].style.transform = 'translateX(' + itemX + 'px)';
+    }
   }
 
   // User Timing API to the rescue again. Seriously, it's worth learning.
@@ -515,23 +513,31 @@ function updatePositions() {
     var timesToUpdatePosition = window.performance.getEntriesByName("measure_frame_duration");
     logAverageFrame(timesToUpdatePosition);
   }
+  //调用下一帧
+  window.requestAnimationFrame(updatePositions);
 }
-
+//因为使用了window.requestAnimationFrame，所以就不需要通过滚动来触发每一帧了
 // runs updatePositions on scroll
-window.addEventListener('scroll', updatePositions);
+// window.addEventListener('scroll', function() {
+//   window.requestAnimationFrame(updatePositions);
+// });
 
 // Generates the sliding pizzas when the page loads.
 document.addEventListener('DOMContentLoaded', function() {
   var cols = 8;
   var s = 256;
-  for (var i = 0; i < 200; i++) {
+  //绘制的pizza数量从200减少至25，满足desktop的显示需求
+  for (var i = 0; i < 25; i++) {
     var elem = document.createElement('img');
     elem.className = 'mover';
-    elem.src = "img/pizza.png";
+    elem.src = "image/pizza.png";
     elem.style.height = "100px";
     elem.style.width = "73.333px";
+    //basicLeft是元素应该在的基础位置
     elem.basicLeft = (i % cols) * s;
     elem.style.top = (Math.floor(i / cols) * s) + 'px';
+    //因为使用了transform，所以必须在一开始就给pizza赋予X坐标值
+    elem.style.left = elem.basicLeft + 'px';
     document.querySelector("#movingPizzas1").appendChild(elem);
   }
   updatePositions();
