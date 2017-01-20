@@ -5,29 +5,31 @@ var gulp = require('gulp'),
   imageResize = require('gulp-image-resize'),
   rename = require('gulp-rename'),
   imagemin = require('gulp-imagemin'),
+  uncss = require('gulp-uncss'),
+  inlinesource = require('gulp-inline-source'),
+  gulpSequence = require('gulp-sequence'),
   pump = require('pump');
 
 //Paths to various files
 var paths = {
-  scripts: ['js/*.js'],
-  styles: ['css/*.css'],
-  smallImage: ['img/pizzeria.jpg'],
-  mediumImage: ['img/mobilewebdev.jpg'],
-  largeImage: ['img/pizzeria.jpg'],
-  minifyImage: ['img/2048.png', 'img/cam_be_like.jpg', 'img/pizza.png'],
-  lowQImage: ['img/profilepic.jpg', 'img/wpo.jpg', 'img/build_2048.jpg', 'img/mwd.jpg'],
-  contents: ['*.html']
+  scripts: ['src/js/*.js'],
+  styles: ['src/css/*.css'],
+  smallImage: ['src/image/pizzeria.jpg'],
+  mediumImage: ['src/image/mobilewebdev.jpg'],
+  largeImage: ['src/image/pizzeria.jpg'],
+  minifyImage: ['src/image/2048.png', 'src/image/pizza.png'],
+  lowQImage: ['src/image/profilepic.jpg', 'src/image/cam_be_like.jpg', 'src/image/wpo.jpg', 'src/image/build_2048.jpg', 'src/image/mwd.jpg'],
+  camContents: ['src/index.html', 'src/project-2048.html', 'src/project-mobile.html', 'src/project-webperf.html'],
+  pizzaContent: ['src/pizza.html'],
+  contents: ['src/*.html']
 };
 
 //Minifies js files
 gulp.task('scripts', function(cb) {
   pump([
-        gulp.src(paths.scripts),
-        uglify(),
-        rename({
-              suffix: "-min"
-            }),
-        gulp.dest('./dist/js/')
+      gulp.src(paths.scripts),
+      uglify(),
+      gulp.dest('./dist/js/')
     ],
     cb
   );
@@ -37,19 +39,19 @@ gulp.task('scripts', function(cb) {
 gulp.task('styles', function() {
   return gulp.src(paths.styles)
     .pipe(cleanCSS())
-    .pipe(rename({
-      suffix: "-min"
-    }))
     .pipe(gulp.dest('./dist/css/'));
 });
 
-// Minifies our HTML files
-gulp.task('contents', function() {
+//移动HTML文件
+gulp.task('moveHTML', function() {
   return gulp.src(paths.contents)
-    .pipe(htmlmin({ collapseWhitespace: true }))
-    .pipe(rename({
-      suffix: "-min"
-    }))
+    .pipe(gulp.dest('./dist/'));
+});
+
+//将CSS文件内联到HTML中
+gulp.task('inlinesource', function() {
+  return gulp.src('dist/*.html')
+    .pipe(inlinesource())
     .pipe(gulp.dest('./dist/'));
 });
 
@@ -61,7 +63,7 @@ gulp.task('smallImage', function() {
     }))
     .pipe(imagemin())
     .pipe(rename({
-      suffix: "-100-min"
+      suffix: "-100"
     }))
     .pipe(gulp.dest('./dist/image'));
 });
@@ -72,9 +74,6 @@ gulp.task('mediumImage', function() {
       width: 600
     }))
     .pipe(imagemin())
-    .pipe(rename({
-      suffix: "-600-min"
-    }))
     .pipe(gulp.dest('./dist/image'));
 });
 
@@ -84,42 +83,36 @@ gulp.task('largeImage', function() {
       width: 720
     }))
     .pipe(imagemin())
-    .pipe(rename({
-      suffix: "-720-min"
-    }))
     .pipe(gulp.dest('./dist/image'));
 });
 gulp.task('minifyImage', function() {
   return gulp.src(paths.minifyImage)
-    .pipe(rename({
-      suffix: "-min"
-    }))
+    .pipe(imagemin())
     .pipe(gulp.dest('./dist/image'));
 });
 
 gulp.task('lowQImage', function() {
   return gulp.src(paths.lowQImage)
     .pipe(imageResize({
-      quality: 0.6
+      quality: 0.8
     }))
     .pipe(imagemin())
-    .pipe(rename({
-      suffix: "-0.6-min"
-    }))
     .pipe(gulp.dest('./dist/image'));
-});
-
-//监听js文件的改动，并执行scripts任务
-gulp.task('watch', function() {
-  gulp.watch(paths.scripts, ['scripts']);
 });
 
 gulp.task('images', ['smallImage', 'mediumImage', 'largeImage', 'minifyImage', 'lowQImage']);
 
-gulp.task('cj', ['styles', 'scripts']);
+gulp.task('contents', gulpSequence('moveHTML', 'inlinesource'));
 
-gulp.task('h', ['contents']);
+gulp.task('default', gulpSequence(['scripts','styles','images'], 'contents'));
 
-gulp.task('cji', ['styles', 'scripts', 'images']);
-
-gulp.task('default', ['styles', 'scripts', 'contents', 'images']);
+//监听js CSS文件的改动，并执行scripts styles任务
+gulp.task('watch', function() {
+  gulp.watch(paths.scripts, ['scripts']);
+  gulp.watch(paths.styles, function (event) {
+    gulpSequence('styles', 'inlinesource')(function (err) {
+      if (err) console.log(err)
+    })
+  });
+  gulp.watch(paths.contents, ['contents']);
+});

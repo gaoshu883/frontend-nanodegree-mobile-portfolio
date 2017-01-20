@@ -22,8 +22,11 @@
     "gulp-htmlmin": "^3.0.0",
     "gulp-image-resize": "^0.11.0",
     "gulp-imagemin": "^3.1.1",
+    "gulp-inline-source": "^3.0.0",
     "gulp-rename": "^1.2.2",
-    "gulp-uglify": "^2.0.0"
+    "gulp-sequence": "^0.4.6",
+    "gulp-uglify": "^2.0.0",
+    "gulp-uncss": "^1.0.6"
   },
   "dependencies": {
     "pump": "^1.0.2"
