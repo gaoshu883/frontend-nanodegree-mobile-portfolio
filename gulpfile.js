@@ -43,8 +43,13 @@ gulp.task('styles', function() {
 });
 
 //移动HTML文件
-gulp.task('moveHTML', function() {
+gulp.task('minifyHTML', function() {
   return gulp.src(paths.contents)
+    .pipe(htmlmin({
+      collapseWhitespace: true,
+      minifyJS: true,
+      removeComments: true
+    }))
     .pipe(gulp.dest('./dist/'));
 });
 
@@ -102,7 +107,7 @@ gulp.task('lowQImage', function() {
 
 gulp.task('images', ['smallImage', 'mediumImage', 'largeImage', 'minifyImage', 'lowQImage']);
 
-gulp.task('contents', gulpSequence('moveHTML', 'inlinesource'));
+gulp.task('contents', gulpSequence('minifyHTML', 'inlinesource'));
 
 gulp.task('default', gulpSequence(['scripts','styles','images'], 'contents'));
 
