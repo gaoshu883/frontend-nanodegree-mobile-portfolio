@@ -1,40 +1,194 @@
 ## Website Performance Optimization portfolio project
 
-Your challenge, if you wish to accept it (and we sure hope you will), is to optimize this online portfolio for speed! In particular, optimize the critical rendering path and make this page render as quickly as possible by applying the techniques you've picked up in the [Critical Rendering Path course](https://www.udacity.com/course/ud884).
+It is the [Project 6](https://github.com/udacity/frontend-nanodegree-mobile-portfolio) of Udacity's Front-End Web Developer Nanodegree, which is to optimize an [online portfolio](https://rawgit.com/udacity/frontend-nanodegree-mobile-portfolio/master/index.html) for speed.
 
-To get started, check out the repository and inspect the code.
+Main tasks:
++ `index.html` achieves a `Pagespeed` score of at least 90 for Mobile and Desktop
++ `pizza.html` gets rid of jank
+
+Here is the optimized profolio site: [URL](URL)
 
 ### Getting started
 
-####Part 1: Optimize PageSpeed Insights score for index.html
-
-Some useful tips to help you get started:
-
-1. Check out the repository
-1. To inspect the site on your phone, you can run a local server
+1. `git clone https://github.com/gaoshu883/frontend-nanodegree-mobile-portfolio.git`
+1. Install task runner
 
   ```bash
   $> cd /path/to/your-project-folder
-  $> python -m SimpleHTTPServer 8080
+  $> npm install
   ```
+1. Run a local server
 
-1. Open a browser and visit localhost:8080
+  ```bash
+  $> cd /path/to/your-project-folder/dist
+  $> npm install httpster -g
+  $> httpster
+  ```
+1. Open chrome browser and visit localhost:3333
 1. Download and install [ngrok](https://ngrok.com/) to the top-level of your project directory to make your local server accessible remotely.
 
   ``` bash
   $> cd /path/to/your-project-folder
-  $> ./ngrok http 8080
+  $> ./ngrok http 3333
   ```
+1. Copy the public URL ngrok gives you and try running it through [PageSpeed Insights](https://developers.google.com/speed/pagespeed/insights/)
 
-1. Copy the public URL ngrok gives you and try running it through PageSpeed Insights! Optional: [More on integrating ngrok, Grunt and PageSpeed.](http://www.jamescryer.com/2014/06/12/grunt-pagespeed-and-ngrok-locally-testing/)
+### Optimized parts
 
-Profile, optimize, measure... and then lather, rinse, and repeat. Good luck!
+####Part 1: Optimize PageSpeed Insights score for index.html
+
+**PageSpeed scores:**
+
+ * Mobile: 90+/100
+ * Desktop: 90+/100
+
+**Optimizations:**
+
+| Items  | Check out|
+| ------------------------------------------------------ | -----------------------------------   |
+| Removed google fonts                                   | `src/index.html`                      |
+| Used media query for print.css                         | `src/index.html`                      |
+| Moved all script tags to end of body                   | `src/index.html`                      |
+| Added async to analytics and perfmatters script tags   | `src/index.html`                      |
+| Included CSS inline                                    | `src/index.html` `dist/index.html`    |
+| Minified all CSS, JS and HTML files                    | `dist/css` `dist/js` `dist/index.html`|
+| Resized and compressed images                          | `dist/image`                          |
+
+**Dev tools:**
+
+* Use `gulp` to minify assets and build the project, check out `gulpfile.js` and `package.json`for more details about task runner configure and dependencies.
+* Use `Timeline`(now named `Performance`) to analyze CRP.
 
 ####Part 2: Optimize Frames per Second in pizza.html
 
-To optimize views/pizza.html, you will need to modify views/js/main.js until your frames per second rate is 60 fps or higher. You will find instructive comments in main.js. 
+**Optimizated results:**
 
-You might find the FPS Counter/HUD Display useful in Chrome developer tools described here: [Chrome Dev Tools tips-and-tricks](https://developer.chrome.com/devtools/docs/tips-and-tricks).
+* Frame-rate is about 60 fps when scrolling
+
+* Average scripting time to generate last 10 frames is ~1 ms
+
+* Time to resize pizzas is less than 5 ms
+
+**Optimizations:**
+
+- Refactor `resizePizzas` --- Check out `src/js/main.js:426`
+   + Deleted `determineDx` function and refactor `changePizzaSizes` function, made it easier and faster to change the pizzas' sizes
+   + Used `randomPizzas` for caching DOM objects outside the for-loop
+   + Fixed FSL
+
+```JavaScript
+
+  changeSliderLabel(size);
+
+  // Refactors `changePizzaSizes` and remove `determineDx`
+  // Iterates through pizza elements on the page and changes their widths
+  function changePizzaSizes(size) {
+    var newwidth;
+    // Chooses different width for pizza contanier when slider moves
+    switch(size) {
+      case "1":
+        newwidth = 25;
+        break;
+      case "2":
+        newwidth = 33.33;
+        break;
+      case "3":
+        newwidth = 50;
+        break;
+      default:
+        console.log("bug in sizeSwitcher");
+    }
+    // Uses `randomPizzas` for caching DOM objects outside the for-loop
+    // Reads DOM only once and avoid FSL
+    // Uses `getElementsByClassName` instead `querySelectorAll` to read DOM faster
+    var randomPizzas = document.getElementsByClassName("randomPizzaContainer");
+    for (var i = 0; i < randomPizzas.length; i++) {
+      randomPizzas[i].style.width = newwidth + '%';
+    }
+  }
+
+  changePizzaSizes(size);
+
+```
+
+- Refactor `updatePositions` --- Check out `src/js/main.js:498`
+
+  + Rewrited the for loop
+  + Aoided FSL
+  + Uses transform for not triggering the Layout and Paint
+
+```JavaScript
+
+  // Uses more effecient way to read DOM faster
+  var items = document.getElementsByClassName('mover');
+
+  // Reads DOM only once outside executing the for-loop
+  var dx = document.body.scrollTop / 1250;
+
+  // There are only five different phases applied for all items, so make five items a group,
+  // the first phase will be added to the first one of each group, and so forth.
+  var n = items.length / 5; // Uses n for caching the number of group outside the for-loop
+  for (var i = 0; i < 5; i++) {
+    var phase = Math.sin(dx + i);
+    for (var j = 0; j < n; j++) {
+      var itemX = items[5 * j + i].basicLeft + 100 * phase;
+      // Uses transform instead left for not triggering the layout and paint
+      items[5 * j + i].style.transform = 'translateX(' + itemX + 'px)';
+    }
+  }
+
+```
+
+- Use rAF to update positions of pizzas --- Check out `src/js/main.js:524`
+
+```JavaScript
+
+  window.addEventListener('scroll', function() {
+    window.requestAnimationFrame(updatePositions);
+  });
+
+```
+
+- Reduce the number of pizza --- Check out `src/js/main.js:532`
+
+```JavaScript
+
+  document.addEventListener('DOMContentLoaded', function() {
+    var cols = 8;
+    var s = 256;
+    // Reduce the number of pizza to 25, which is enough for 14' desktop
+    for (var i = 0; i < 25; i++) {
+      var elem = document.createElement('img');
+      elem.className = 'mover';
+      elem.src = "image/pizza.png";
+      elem.style.height = "100px";
+      elem.style.width = "73.333px";
+      elem.basicLeft = (i % cols) * s;
+      elem.style.top = (Math.floor(i / cols) * s) + 'px';
+      // Initializes the original X coordinate of pizzas
+      elem.style.left = elem.basicLeft + 'px';
+      document.querySelector("#movingPizzas1").appendChild(elem);
+    }
+    updatePositions();
+  });
+
+```
+
+
+- Modify `.mover` styles --- Check out `src/css/view-style.css:32`
+
+```CSS
+  .mover {
+    position: fixed;
+    width: 256px;
+    z-index: -1;
+    /* Creates a layer*/
+    transform: translateZ(0);
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+
+```
 
 ### Optimization Tips and Tricks
 * [Optimizing Performance](https://developers.google.com/web/fundamentals/performance/ "web performance")
