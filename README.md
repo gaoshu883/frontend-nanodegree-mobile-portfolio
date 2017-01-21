@@ -6,12 +6,12 @@ Main tasks:
 + `index.html` achieves a `Pagespeed` score of at least 90 for Mobile and Desktop
 + `pizza.html` gets rid of jank
 
-Here is the optimized profolio site: [URL](URL)
+Here is the optimized profolio site: [http://lu3xiang.top/frontend-nanodegree-mobile-portfolio/](http://lu3xiang.top/frontend-nanodegree-mobile-portfolio/)
 
 ### Getting started
 
 1. `git clone https://github.com/gaoshu883/frontend-nanodegree-mobile-portfolio.git`
-1. Install task runner
+1. Install build tools
 
   ```bash
   $> cd /path/to/your-project-folder
@@ -46,10 +46,10 @@ Here is the optimized profolio site: [URL](URL)
 
 | Items  | Check out|
 | ------------------------------------------------------ | -----------------------------------   |
-| Removed google fonts                                   | `src/index.html`                      |
-| Used media query for print.css                         | `src/index.html`                      |
-| Moved all script tags to end of body                   | `src/index.html`                      |
-| Added async to analytics and perfmatters script tags   | `src/index.html`                      |
+| Removed google fonts                                   | `src/index.html:11`                   |
+| Used media query for print.css                         | `src/index.html:17`                   |
+| Moved all script tags to end of body                   | `src/index.html:64`                   |
+| Added async to analytics and perfmatters script tags   | `src/index.html:73`                   |
 | Included CSS inline                                    | `src/index.html` `dist/index.html`    |
 | Minified all CSS, JS and HTML files                    | `dist/css` `dist/js` `dist/index.html`|
 | Resized and compressed images                          | `dist/image`                          |
@@ -72,7 +72,7 @@ Here is the optimized profolio site: [URL](URL)
 **Optimizations:**
 
 - Refactor `resizePizzas` --- Check out `src/js/main.js:426`
-   + Deleted `determineDx` function and refactor `changePizzaSizes` function, made it easier and faster to change the pizzas' sizes
+   + Deleted `determineDx` function and refactored `changePizzaSizes` function, made it easier and faster to change the pizzas' sizes
    + Used `randomPizzas` for caching DOM objects outside the for-loop
    + Fixed FSL
 
@@ -114,8 +114,8 @@ Here is the optimized profolio site: [URL](URL)
 - Refactor `updatePositions` --- Check out `src/js/main.js:498`
 
   + Rewrited the for loop
-  + Aoided FSL
-  + Uses transform for not triggering the Layout and Paint
+  + Avoided FSL
+  + Used transform for not triggering the Layout and Paint
 
 ```JavaScript
 
@@ -126,7 +126,7 @@ Here is the optimized profolio site: [URL](URL)
   var dx = document.body.scrollTop / 1250;
 
   // There are only five different phases applied for all items, so make five items a group,
-  // the first phase will be added to the first one of each group, and so forth.
+  // the first phase will be applied to the first one of each group, and so forth.
   var n = items.length / 5; // Uses n for caching the number of group outside the for-loop
   for (var i = 0; i < 5; i++) {
     var phase = Math.sin(dx + i);
@@ -156,7 +156,7 @@ Here is the optimized profolio site: [URL](URL)
   document.addEventListener('DOMContentLoaded', function() {
     var cols = 8;
     var s = 256;
-    // Reduce the number of pizza to 25, which is enough for 14' desktop
+    // Reduce the number of pizza to 25
     for (var i = 0; i < 25; i++) {
       var elem = document.createElement('img');
       elem.className = 'mover';
