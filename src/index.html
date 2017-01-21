@@ -7,13 +7,13 @@
     <meta name="author" content=" FILL ME IN ">
     <title>Cameron Pittman: Portfolio</title>
 
-    <!-- Hmm, what is the impact of web fonts on speed? Measure it... -->
-    <!-- 影响很大，我先暂时删除哈 -->
+    <!-- Removed google fonts -->
     <!-- <link href="//fonts.googleapis.com/css?family=Open+Sans:400,700" rel="stylesheet"> -->
 
-    <!-- 内联样式 使用gulp-inline-source插件进行后处理 -->
+    <!-- Used gulp-inline-source plugin to inline style.css-->
     <link href="css/style.css" rel="stylesheet" inline>
-    <!-- print.css采用媒体查询 -->
+
+    <!-- Used media query for print.css -->
     <link href="css/print.css" rel="stylesheet" media="print">
   </head>
 
@@ -60,7 +60,7 @@
         <p>&copy; Web Performance 2014 <span id="crp-stats"></span></p>
       </footer>
     </div>
-    <!-- 我把谷歌分析代码放到了最后面，同时又给其加上了一个异步属性 -->
+    <!-- Moved script tags to end of body -->
     <script>
       (function(w,g){w['GoogleAnalyticsObject']=g;
       w[g]=w[g]||function(){(w[g].q=w[g].q||[]).push(arguments)};w[g].l=1*new Date();})(window,'ga');
@@ -69,6 +69,7 @@
       ga('create', 'UA-90343084-1');
       ga('send', 'pageview');
     </script>
+    <!-- Added async to analytics and perfmatters script tags -->
     <script async src="http://www.google-analytics.com/analytics.js"></script>
     <script async src="js/perfmatters.js"></script>
   </body>
