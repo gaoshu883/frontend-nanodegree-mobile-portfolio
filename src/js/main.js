@@ -360,6 +360,9 @@ var makeRandomPizza = function() {
 
 // returns a DOM element for each pizza
 var pizzaElementGenerator = function(i) {
+  // Strict mode for function
+  'use strict';
+
   var pizzaContainer,             // contains pizza title, image and list of ingredients
       pizzaImageContainer,        // contains the pizza image
       pizzaImage,                 // the pizza image itself
@@ -400,19 +403,23 @@ var pizzaElementGenerator = function(i) {
 
 // resizePizzas(size) is called when the slider in the "Our Pizzas" section of the website moves.
 var resizePizzas = function(size) {
+  // Strict mode for function
+  'use strict';
+
   window.performance.mark("mark_start_resize");   // User Timing API function
 
   // Changes the value for the size of the pizza above the slider
+  // The `document.getElementById()` Web API call is faster than `document.querySelector()`
   function changeSliderLabel(size) {
     switch(size) {
       case "1":
-        document.querySelector("#pizzaSize").innerHTML = "Small";
+        document.getElementById('pizzaSize').innerHTML = "Small";
         return;
       case "2":
-        document.querySelector("#pizzaSize").innerHTML = "Medium";
+        document.getElementById('pizzaSize').innerHTML = "Medium";
         return;
       case "3":
-        document.querySelector("#pizzaSize").innerHTML = "Large";
+        document.getElementById('pizzaSize').innerHTML = "Large";
         return;
       default:
         console.log("bug in changeSliderLabel");
@@ -443,7 +450,8 @@ var resizePizzas = function(size) {
     // Reads DOM only once and avoid FSL
     // Uses `getElementsByClassName` instead `querySelectorAll` to read DOM faster
     var randomPizzas = document.getElementsByClassName("randomPizzaContainer");
-    for (var i = 0; i < randomPizzas.length; i++) {
+    // Saves the array's length in a variable to prevent checking its value at each iteration
+    for (var i = 0, len = randomPizzas.length; i < len; i++) {
       randomPizzas[i].style.width = newwidth + '%';
     }
   }
@@ -460,8 +468,9 @@ var resizePizzas = function(size) {
 window.performance.mark("mark_start_generating"); // collect timing data
 
 // This for-loop actually creates and appends all of the pizzas when the page loads
+// Declare the `pizzasDiv` variable outside the loop
+var pizzasDiv = document.getElementById("randomPizzas");
 for (var i = 2; i < 100; i++) {
-  var pizzasDiv = document.getElementById("randomPizzas");
   pizzasDiv.appendChild(pizzaElementGenerator(i));
 }
 
@@ -490,6 +499,9 @@ function logAverageFrame(times) {   // times is the array of User Timing measure
 
 // Moves the sliding background pizzas based on scroll position
 function updatePositions() {
+  // Strict mode for function
+  'use strict';
+
   frame++;
   window.performance.mark("mark_start_frame");
 
@@ -498,15 +510,10 @@ function updatePositions() {
   var items = document.getElementsByClassName('mover');
   // Reads DOM only once outside executing the for-loop
   var dx = document.body.scrollTop / 1250;
-  // Uses n for caching the number of group outside the for-loop
-  var n = items.length / 5;
-  for (var i = 0; i < 5; i++) {
-    var phase = Math.sin(dx + i);
-    for (var j = 0; j < n; j++) {
-      var itemX = items[5 * j + i].basicLeft + 100 * phase;
-      // Uses transform instead left for not triggering the layout and paint
-      items[5 * j + i].style.transform = 'translateX(' + itemX + 'px)';
-    }
+  // The following code was suggested by Udacity's reviewer
+  for (var i = 0, len = items.length, phase; i < len; i++) {
+    phase = 100 * Math.sin(dx + i % 5);
+    items[i].style.transform = 'translateX(' + phase + 'px)';
   }
 
   // User Timing API to the rescue again. Seriously, it's worth learning.
@@ -528,9 +535,14 @@ window.addEventListener('scroll', function() {
 document.addEventListener('DOMContentLoaded', function() {
   var cols = 8;
   var s = 256;
-  // Reduce the number of pizza to 25
-  for (var i = 0; i < 25; i++) {
-    var elem = document.createElement('img');
+
+  // The `document.getElementById()` Web API call is faster than `document.querySelector()`
+  // Moves `document.getElementById('movingPizzas1')` outside the loop
+  var movingPizzas = document.getElementById('movingPizzas1');
+  // Reduce the number of pizza to 24
+  // Declaring the `elem` variable in the initialisation of the for-loop
+  for (var i = 0, elem; i < 24; i++) {
+    elem = document.createElement('img');
     elem.className = 'mover';
     elem.src = "image/pizza.png";
     elem.style.height = "100px";
@@ -539,7 +551,7 @@ document.addEventListener('DOMContentLoaded', function() {
     elem.style.top = (Math.floor(i / cols) * s) + 'px';
     // Initializes the original X coordinate of pizzas
     elem.style.left = elem.basicLeft + 'px';
-    document.querySelector("#movingPizzas1").appendChild(elem);
+    movingPizzas.appendChild(elem);
   }
   updatePositions();
 });
