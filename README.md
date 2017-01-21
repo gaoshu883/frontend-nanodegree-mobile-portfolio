@@ -71,12 +71,31 @@ Here is the optimized profolio site: [http://lu3xiang.top/frontend-nanodegree-mo
 
 **Optimizations:**
 
-- Refactor `resizePizzas` --- Check out `src/js/main.js:426`
+- Refactor `resizePizzas` --- Check out `src/js/main.js`
    + Deleted `determineDx` function and refactored `changePizzaSizes` function, made it easier and faster to change the pizzas' sizes
    + Used `randomPizzas` for caching DOM objects outside the for-loop
-   + Fixed FSL
+   + <del>Fixed FSL</del>
+   + <b>Used `document.getElementById()` to query DOM faster</b>  <!-- Added -->
+   + <b>Saved the array's length in a variable</b>  <!-- Added -->
 
 ```JavaScript
+
+  // The `document.getElementById()` Web API call is faster than `document.querySelector()`
+  function changeSliderLabel(size) {
+    switch(size) {
+      case "1":
+        document.getElementById('pizzaSize').innerHTML = "Small";
+        return;
+      case "2":
+        document.getElementById('pizzaSize').innerHTML = "Medium";
+        return;
+      case "3":
+        document.getElementById('pizzaSize').innerHTML = "Large";
+        return;
+      default:
+        console.log("bug in changeSliderLabel");
+    }
+  }
 
   changeSliderLabel(size);
 
@@ -102,7 +121,8 @@ Here is the optimized profolio site: [http://lu3xiang.top/frontend-nanodegree-mo
     // Reads DOM only once and avoid FSL
     // Uses `getElementsByClassName` instead `querySelectorAll` to read DOM faster
     var randomPizzas = document.getElementsByClassName("randomPizzaContainer");
-    for (var i = 0; i < randomPizzas.length; i++) {
+    // Saves the array's length in a variable to prevent checking its value at each iteration
+    for (var i = 0, len = randomPizzas.length; i < len; i++) {
       randomPizzas[i].style.width = newwidth + '%';
     }
   }
@@ -111,10 +131,10 @@ Here is the optimized profolio site: [http://lu3xiang.top/frontend-nanodegree-mo
 
 ```
 
-- Refactor `updatePositions` --- Check out `src/js/main.js:498`
+- Refactor `updatePositions` --- Check out `src/js/main.js`
 
-  + Rewrited the for loop
-  + Avoided FSL
+  + Rewrited the for loop <b>using the code suggested by Udacity's reviewer</b>  <!-- Modified -->
+  + <del>Avoided FSL</del>
   + Used transform for not triggering the Layout and Paint
 
 ```JavaScript
@@ -124,22 +144,16 @@ Here is the optimized profolio site: [http://lu3xiang.top/frontend-nanodegree-mo
 
   // Reads DOM only once outside executing the for-loop
   var dx = document.body.scrollTop / 1250;
-
-  // There are only five different phases applied for all items, so make five items a group,
-  // the first phase will be applied to the first one of each group, and so forth.
-  var n = items.length / 5; // Uses n for caching the number of group outside the for-loop
-  for (var i = 0; i < 5; i++) {
-    var phase = Math.sin(dx + i);
-    for (var j = 0; j < n; j++) {
-      var itemX = items[5 * j + i].basicLeft + 100 * phase;
-      // Uses transform instead left for not triggering the layout and paint
-      items[5 * j + i].style.transform = 'translateX(' + itemX + 'px)';
-    }
+  // The following code was suggested by Udacity's reviewer
+  for (var i = 0, len = items.length, phase; i < len; i++) {
+    phase = 100 * Math.sin(dx + i % 5);
+    items[i].style.transform = 'translateX(' + phase + 'px)';
   }
+
 
 ```
 
-- Use rAF to update positions of pizzas --- Check out `src/js/main.js:524`
+- Use rAF to update positions of pizzas --- Check out `src/js/main.js`
 
 ```JavaScript
 
@@ -149,16 +163,24 @@ Here is the optimized profolio site: [http://lu3xiang.top/frontend-nanodegree-mo
 
 ```
 
-- Reduce the number of pizza --- Check out `src/js/main.js:532`
+- Reduce the number of pizza --- Check out `src/js/main.js`
+  + <b>`document.getElementById()` Web API call is faster</b>  <!-- Added -->
+  + <b>Moved `document.getElementById('movingPizzas1')` outside the loop</b>  <!-- Added -->
+  + <b>Declared the `elem` variable in the initialisation of the for-loop</b>  <!-- Added -->
 
 ```JavaScript
 
   document.addEventListener('DOMContentLoaded', function() {
     var cols = 8;
     var s = 256;
-    // Reduce the number of pizza to 25
-    for (var i = 0; i < 25; i++) {
-      var elem = document.createElement('img');
+
+    // The document.getElementById() Web API call is faster than document.querySelector()
+    // Moves document.getElementById('movingPizzas1') outside the loop
+    var movingPizzas = document.getElementById('movingPizzas1');
+    // Reduce the number of pizza to 24
+    // Declares the `elem` variable in the initialisation of the for-loop
+    for (var i = 0, elem; i < 24; i++) {
+      elem = document.createElement('img');
       elem.className = 'mover';
       elem.src = "image/pizza.png";
       elem.style.height = "100px";
@@ -167,15 +189,25 @@ Here is the optimized profolio site: [http://lu3xiang.top/frontend-nanodegree-mo
       elem.style.top = (Math.floor(i / cols) * s) + 'px';
       // Initializes the original X coordinate of pizzas
       elem.style.left = elem.basicLeft + 'px';
-      document.querySelector("#movingPizzas1").appendChild(elem);
+      movingPizzas.appendChild(elem);
     }
     updatePositions();
   });
 
 ```
 
+- <b>Declare the `pizzasDiv` variable outside the loop</b>
 
-- Modify `.mover` styles --- Check out `src/css/view-style.css:32`
+```JavaScript
+
+  var pizzasDiv = document.getElementById("randomPizzas");
+  for (var i = 2; i < 100; i++) {
+    pizzasDiv.appendChild(pizzaElementGenerator(i));
+  }
+
+```
+
+- Modify `.mover` styles <del></del>--- Check out `src/css/view-style.css`
 
 ```CSS
   .mover {
@@ -183,12 +215,18 @@ Here is the optimized profolio site: [http://lu3xiang.top/frontend-nanodegree-mo
     width: 256px;
     z-index: -1;
     /* Creates a layer*/
+    -webkit-transform: translateZ(0);
     transform: translateZ(0);
     will-change: transform;
+    -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
   }
 
 ```
+
+- Other
+
+  + <b>Used strict mode for `pizzaElementGenerator`, `resizePizzas`, `updatePositions` functions</b>
 
 ### Optimization Tips and Tricks
 * [Optimizing Performance](https://developers.google.com/web/fundamentals/performance/ "web performance")
