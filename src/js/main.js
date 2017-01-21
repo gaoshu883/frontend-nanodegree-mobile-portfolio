@@ -408,40 +408,25 @@ var resizePizzas = function(size) {
 
   window.performance.mark("mark_start_resize");   // User Timing API function
 
-  // Changes the value for the size of the pizza above the slider
-  // The `document.getElementById()` Web API call is faster than `document.querySelector()`
-  function changeSliderLabel(size) {
-    switch(size) {
-      case "1":
-        document.getElementById('pizzaSize').innerHTML = "Small";
-        return;
-      case "2":
-        document.getElementById('pizzaSize').innerHTML = "Medium";
-        return;
-      case "3":
-        document.getElementById('pizzaSize').innerHTML = "Large";
-        return;
-      default:
-        console.log("bug in changeSliderLabel");
-    }
-  }
-
-  changeSliderLabel(size);
-
-  // Refactors `changePizzaSizes` and remove `determineDx`
-  // Iterates through pizza elements on the page and changes their widths
+  // Merges `changeSliderLabel` into `changePizzaSizes`
+  // Refactors `changePizzaSizes` and removes `determineDx`
+  // @discription: Changes the value for the size of the pizza above the slider, and
+  //               iterates through pizza elements on the page and changes their widths
   function changePizzaSizes(size) {
     var newwidth;
-
+    // The `document.getElementById()` Web API call is faster than `document.querySelector()`
     switch(size) {
       case "1":
         newwidth = 25;
+        document.getElementById('pizzaSize').innerHTML = "Small";
         break;
       case "2":
         newwidth = 33.33;
+        document.getElementById('pizzaSize').innerHTML = "Medium";
         break;
       case "3":
         newwidth = 50;
+        document.getElementById('pizzaSize').innerHTML = "Large";
         break;
       default:
         console.log("bug in sizeSwitcher");
@@ -535,13 +520,14 @@ window.addEventListener('scroll', function() {
 document.addEventListener('DOMContentLoaded', function() {
   var cols = 8;
   var s = 256;
-
+  // Calculates dynamically the number of pizzas needed to fill the screen
+  var rows = Math.floor(screen.height / s);
+  var pizzaNum = cols * rows;
   // The `document.getElementById()` Web API call is faster than `document.querySelector()`
   // Moves `document.getElementById('movingPizzas1')` outside the loop
   var movingPizzas = document.getElementById('movingPizzas1');
-  // Reduce the number of pizza to 24
   // Declaring the `elem` variable in the initialisation of the for-loop
-  for (var i = 0, elem; i < 24; i++) {
+  for (var i = 0, elem; i < pizzaNum; i++) {
     elem = document.createElement('img');
     elem.className = 'mover';
     elem.src = "image/pizza.png";
