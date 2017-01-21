@@ -72,6 +72,7 @@ Here is the optimized profolio site: [http://lu3xiang.top/frontend-nanodegree-mo
 **Optimizations:**
 
 - Refactor `resizePizzas` --- Check out `src/js/main.js`
+   + <b>Merged `changeSliderLabel` into `changePizzaSizes`</b>
    + Deleted `determineDx` function and refactored `changePizzaSizes` function, made it easier and faster to change the pizzas' sizes
    + Used `randomPizzas` for caching DOM objects outside the for-loop
    + <del>Fixed FSL</del>
@@ -80,39 +81,25 @@ Here is the optimized profolio site: [http://lu3xiang.top/frontend-nanodegree-mo
 
 ```JavaScript
 
-  // The `document.getElementById()` Web API call is faster than `document.querySelector()`
-  function changeSliderLabel(size) {
-    switch(size) {
-      case "1":
-        document.getElementById('pizzaSize').innerHTML = "Small";
-        return;
-      case "2":
-        document.getElementById('pizzaSize').innerHTML = "Medium";
-        return;
-      case "3":
-        document.getElementById('pizzaSize').innerHTML = "Large";
-        return;
-      default:
-        console.log("bug in changeSliderLabel");
-    }
-  }
-
-  changeSliderLabel(size);
-
-  // Refactors `changePizzaSizes` and remove `determineDx`
-  // Iterates through pizza elements on the page and changes their widths
+  // Merges `changeSliderLabel` into `changePizzaSizes`
+  // Refactors `changePizzaSizes` and removes `determineDx`
+  // @discription: Changes the value for the size of the pizza above the slider, and
+  //               iterates through pizza elements on the page and changes their widths
   function changePizzaSizes(size) {
     var newwidth;
-    // Chooses different width for pizza contanier when slider moves
+    // The `document.getElementById()` Web API call is faster than `document.querySelector()`
     switch(size) {
       case "1":
         newwidth = 25;
+        document.getElementById('pizzaSize').innerHTML = "Small";
         break;
       case "2":
         newwidth = 33.33;
+        document.getElementById('pizzaSize').innerHTML = "Medium";
         break;
       case "3":
         newwidth = 50;
+        document.getElementById('pizzaSize').innerHTML = "Large";
         break;
       default:
         console.log("bug in sizeSwitcher");
@@ -164,6 +151,7 @@ Here is the optimized profolio site: [http://lu3xiang.top/frontend-nanodegree-mo
 ```
 
 - Reduce the number of pizza --- Check out `src/js/main.js`
+  + <b>Calculated dynamically the number of pizzas needed to fill the screen</b>
   + <b>`document.getElementById()` Web API call is faster</b>  <!-- Added -->
   + <b>Moved `document.getElementById('movingPizzas1')` outside the loop</b>  <!-- Added -->
   + <b>Declared the `elem` variable in the initialisation of the for-loop</b>  <!-- Added -->
@@ -173,13 +161,14 @@ Here is the optimized profolio site: [http://lu3xiang.top/frontend-nanodegree-mo
   document.addEventListener('DOMContentLoaded', function() {
     var cols = 8;
     var s = 256;
-
-    // The document.getElementById() Web API call is faster than document.querySelector()
-    // Moves document.getElementById('movingPizzas1') outside the loop
+    // Calculates dynamically the number of pizzas needed to fill the screen
+    var rows = Math.floor(screen.height / s);
+    var pizzaNum = cols * rows;
+    // The `document.getElementById()` Web API call is faster than `document.querySelector()`
+    // Moves `document.getElementById('movingPizzas1')` outside the loop
     var movingPizzas = document.getElementById('movingPizzas1');
-    // Reduce the number of pizza to 24
-    // Declares the `elem` variable in the initialisation of the for-loop
-    for (var i = 0, elem; i < 24; i++) {
+    // Declaring the `elem` variable in the initialisation of the for-loop
+    for (var i = 0, elem; i < pizzaNum; i++) {
       elem = document.createElement('img');
       elem.className = 'mover';
       elem.src = "image/pizza.png";
