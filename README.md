@@ -10,28 +10,28 @@ Here is the optimized profolio site: [http://lu3xiang.top/frontend-nanodegree-mo
 
 ### Getting started
 
-1. `git clone https://github.com/gaoshu883/frontend-nanodegree-mobile-portfolio.git`
-1. Install build tools
++ `git clone https://github.com/gaoshu883/frontend-nanodegree-mobile-portfolio.git`
++ Install build tools
 
   ```bash
   $> cd /path/to/your-project-folder
   $> npm install
   ```
-1. Run a local server
++ Run a local server
 
   ```bash
   $> cd /path/to/your-project-folder/dist
   $> npm install httpster -g
   $> httpster
   ```
-1. Open chrome browser and visit localhost:3333
-1. Download and install [ngrok](https://ngrok.com/) to the top-level of your project directory to make your local server accessible remotely.
++ Open chrome browser and visit localhost:3333
++ Download and install [ngrok](https://ngrok.com/) to the top-level of your project directory to make your local server accessible remotely.
 
   ``` bash
   $> cd /path/to/your-project-folder
   $> ./ngrok http 3333
   ```
-1. Copy the public URL ngrok gives you and try running it through [PageSpeed Insights](https://developers.google.com/speed/pagespeed/insights/)
++ Copy the public URL ngrok gives you and try running it through [PageSpeed Insights](https://developers.google.com/speed/pagespeed/insights/)
 
 ### Optimized parts
 
